@@ -34,7 +34,7 @@ const js = {
 
 // Style loaders
 const styleLoader = {
-  loader: 'style-loader'
+  loader: 'style-loader',
 };
 
 const cssLoader = {
@@ -47,20 +47,14 @@ const cssLoader = {
 const postcssLoader = {
   loader: 'postcss-loader',
   options: {
-    plugins: [
-      require('autoprefixer')(),
-    ],
+    plugins: [require('autoprefixer')()],
     sourceMap,
   },
 };
 
 const css = {
   test: /\.css$/,
-  use: [
-    config.env === 'production' ? MiniCssExtractPlugin.loader : styleLoader,
-    cssLoader,
-    postcssLoader,
-  ],
+  use: [config.env === 'production' ? MiniCssExtractPlugin.loader : styleLoader, cssLoader, postcssLoader],
 };
 
 const sass = {
@@ -117,10 +111,7 @@ const imageLoader = {
 const images = {
   test: /\.(gif|png|jpe?g|svg)$/i,
   exclude: /fonts/,
-  use: [
-    'file-loader?name=images/[name].[hash].[ext]',
-    config.env === 'production' ? imageLoader : null,
-  ].filter(Boolean),
+  use: ['file-loader?name=images/[name].[hash].[ext]', config.env === 'production' ? imageLoader : null].filter(Boolean),
 };
 
 // Font loaders
@@ -152,13 +143,9 @@ const videos = {
   ],
 };
 
-module.exports = [
-  html,
-  js,
-  css,
-  sass,
-  less,
-  images,
-  fonts,
-  videos,
-];
+const pug = {
+  test: /\.pug$/,
+  use: ['html-loader?attrs=false', 'pug-html-loader'],
+};
+
+module.exports = [html, js, css, sass, less, images, fonts, videos, pug];

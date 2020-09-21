@@ -13,6 +13,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const RobotstxtPlugin = require('robotstxt-webpack-plugin');
 const SitemapPlugin = require('sitemap-webpack-plugin').default;
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const config = require('./site.config');
 
@@ -55,20 +56,27 @@ const cssExtract = new MiniCssExtractPlugin({
 
 // HTML generation
 const paths = [];
-const generateHTMLPlugins = () => glob.sync('./src/**/*.html').map((dir) => {
-  const filename = path.basename(dir);
+const generateHTMLPlugins = () =>
+  glob.sync('./src/**/*.html').map((dir) => {
+    const filename = path.basename(dir);
 
-  if (filename !== '404.html') {
-    paths.push(filename);
-  }
+    if (filename !== '404.html') {
+      paths.push(filename);
+    }
 
-  return new HTMLWebpackPlugin({
-    filename,
-    template: path.join(config.root, config.paths.src, filename),
-    meta: {
-      viewport: config.viewport,
-    },
+    return new HTMLWebpackPlugin({
+      filename,
+      template: path.join(config.root, config.paths.src, filename),
+      meta: {
+        viewport: config.viewport,
+      },
+    });
   });
+
+const generateHTMLPug = new HtmlWebpackPlugin({
+  filename: 'index.html',
+  template: 'index.pug',
+  inject: true,
 });
 
 // Sitemap
@@ -114,13 +122,10 @@ class GoogleAnalyticsPlugin {
 
   apply(compiler) {
     compiler.hooks.compilation.tap('GoogleAnalyticsPlugin', (compilation) => {
-      HTMLWebpackPlugin.getHooks(compilation).beforeEmit.tapAsync(
-        'GoogleAnalyticsPlugin',
-        (data, cb) => {
-          data.html = data.html.replace('</head>', `${CODE.replace('{{ID}}', this.id) }</head>`);
-          cb(null, data);
-        },
-      );
+      HTMLWebpackPlugin.getHooks(compilation).beforeEmit.tapAsync('GoogleAnalyticsPlugin', (data, cb) => {
+        data.html = data.html.replace('</head>', `${CODE.replace('{{ID}}', this.id)}</head>`);
+        cb(null, data);
+      });
     });
   }
 }
@@ -134,6 +139,7 @@ module.exports = [
   stylelint,
   cssExtract,
   ...generateHTMLPlugins(),
+  generateHTMLPug,
   fs.existsSync(config.favicon) && favicons,
   config.env === 'production' && optimizeCss,
   config.env === 'production' && robots,
